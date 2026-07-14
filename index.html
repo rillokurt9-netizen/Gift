@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Letter for You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream: #fdfbf7;
+    --rose: #b56a75;
+    --rose-deep: #8a4a55;
+    --sage: #8da38f;
+    --gold: #d4af37;
+    --ink: #2c1a1d;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', serif;
+    overflow-x:hidden;
+  }
+
+  body{
+    background-image:
+      repeating-linear-gradient(0deg, rgba(180,140,120,0.035) 0px, rgba(180,140,120,0.035) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(90deg, rgba(180,140,120,0.03) 0px, rgba(180,140,120,0.03) 1px, transparent 1px, transparent 3px);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  /* ---------- petal shower ---------- */
+  #petal-layer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:50;
+    overflow:hidden;
+  }
+  .petal{
+    position:absolute;
+    top:-40px;
+    width:14px;
+    height:14px;
+    background: radial-gradient(circle at 30% 30%, #d98b96, var(--rose-deep));
+    border-radius: 70% 30% 65% 35% / 60% 40% 60% 40%;
+    opacity:0;
+    animation: petal-fall linear forwards;
+  }
+  @keyframes petal-fall{
+    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
+    8%{ opacity:0.85; }
+    90%{ opacity:0.7; }
+    100%{ transform: translateY(110vh) translateX(var(--drift,40px)) rotate(360deg); opacity:0; }
+  }
+
+  /* ============================================================
+     STAGE 1 — ENVELOPE
+     ============================================================ */
+  #stage-envelope{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+    transition: opacity 0.9s ease, visibility 0.9s ease;
+    z-index:5;
+  }
+  #stage-envelope.hidden{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+
+  .letter-title{
+    font-family:'Playfair Display', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    color: var(--rose-deep);
+    letter-spacing: 0.5px;
+    margin-bottom: 40px;
+    text-align:center;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  }
+
+  .envelope-wrap{
+    position:relative;
+    width: min(88vw, 420px);
+    aspect-ratio: 3 / 2;
+    perspective: 1400px;
+  }
+
+  .envelope-body{
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.4), transparent 60%),
+      linear-gradient(#f4ead9, #ecdcc4);
+    border: 1px solid rgba(212,175,55,0.6);
+    border-radius: 4px;
+    box-shadow:
+      0 10px 25px rgba(44,26,29,0.18),
+      0 2px 4px rgba(44,26,29,0.12),
+      inset 0 0 40px rgba(181,106,117,0.06);
+    overflow:hidden;
+  }
+
+  .envelope-body::before{
+    /* paper fiber texture */
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: radial-gradient(rgba(139,90,60,0.05) 1px, transparent 1px);
+    background-size: 5px 5px;
+    opacity:0.5;
+  }
+
+  /* bottom triangle pocket */
+  .envelope-pocket{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:100%;
+    background: linear-gradient(#f0e4cf, #e6d3b3);
+    clip-path: polygon(0 100%, 50% 40%, 100% 100%);
+    z-index:2;
+    border-top: 1px solid rgba(139,90,60,0.15);
+  }
+
+  .envelope-side-left{
+    position:absolute; top:0; bottom:0; left:0; width:50%;
+    background: linear-gradient(120deg, #f2e6d2, #e9d7b8);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    z-index:1;
+  }
+  .envelope-side-right{
+    position:absolute; top:0; bottom:0; right:0; width:50%;
+    background: linear-gradient(240deg, #f2e6d2, #e9d7b8);
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+    z-index:1;
+  }
+
+  /* top flap */
+  .envelope-flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 62%;
+    background: linear-gradient(160deg, #f6ecdb, #e9d6b4);
+    clip-path: polygon(0 0, 100% 0, 50% 88%);
+    transform-origin: top center;
+    transition: transform 1.1s cubic-bezier(.6,-0.2,.3,1.3);
+    z-index:4;
+    box-shadow: 0 1px 2px rgba(139,90,60,0.15);
+    border-bottom: 1px solid rgba(139,90,60,0.1);
+  }
+
+  .letter-peek{
+    position:absolute;
+    left:8%; right:8%;
+    bottom:6%;
+    height:60%;
+    background: #fffdf6;
+    border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 2px;
+    box-shadow: 0 -4px 12px rgba(44,26,29,0.08);
+    z-index:3;
+    transition: transform 1s cubic-bezier(.5,0,.2,1) 0.15s, opacity 0.6s ease 0.15s;
+    transform: translateY(0);
+  }
+
+  /* wax seal */
+  .wax-seal{
+    position:absolute;
+    top:50%; left:50%;
+    width: 74px; height:74px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #c23b4a, #7c1c26 75%);
+    box-shadow:
+      0 3px 8px rgba(44,26,29,0.4),
+      inset 0 2px 4px rgba(255,255,255,0.25),
+      inset 0 -3px 6px rgba(0,0,0,0.35);
+    transform: translate(-50%, -34%);
+    z-index:6;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border: 2px solid #8f2029;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .wax-seal:hover{
+    transform: translate(-50%, -34%) scale(1.06);
+    box-shadow:
+      0 5px 14px rgba(44,26,29,0.45),
+      inset 0 2px 4px rgba(255,255,255,0.3),
+      inset 0 -3px 6px rgba(0,0,0,0.35);
+  }
+  .wax-seal:active{ transform: translate(-50%, -34%) scale(0.96); }
+  .wax-seal svg{
+    width: 60%; height:60%;
+    opacity:0.9;
+  }
+  .wax-drip{
+    position:absolute;
+    top:50%; left:50%;
+    transform: translate(-50%, -34%);
+    width:74px; height:74px;
+    z-index:5;
+    filter: blur(0.3px);
+  }
+
+  .seal-prompt{
+    margin-top: 34px;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    color: var(--rose-deep);
+    font-style: italic;
+    opacity:0.85;
+    animation: pulse-prompt 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse-prompt{
+    0%,100%{ opacity:0.55; }
+    50%{ opacity:0.95; }
+  }
+
+  /* opening state */
+  #stage-envelope.opening .envelope-flap{
+    transform: rotateX(150deg);
+  }
+  #stage-envelope.opening .letter-peek{
+    transform: translateY(-220%);
+    opacity:0;
+  }
+  #stage-envelope.opening .wax-seal,
+  #stage-envelope.opening .wax-drip{
+    opacity:0;
+    transition: opacity 0.4s ease;
+  }
+
+  /* ============================================================
+     STAGE 2 — PARCHMENT LETTER
+     ============================================================ */
+  #stage-letter{
+    position:fixed;
+    inset:0;
+    z-index:10;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 5vh 16px 140px;
+    overflow-y:auto;
+    opacity:0;
+    visibility:hidden;
+    transition: opacity 1s ease 0.3s, visibility 1s ease 0.3s;
+  }
+  #stage-letter.visible{
+    opacity:1;
+    visibility:visible;
+  }
+
+  .parchment{
+    position:relative;
+    width:min(92vw, 640px);
+    margin: 20px auto 0;
+    padding: clamp(32px, 6vw, 64px) clamp(24px, 6vw, 56px) 40px;
+    background:
+      radial-gradient(ellipse at top, rgba(212,175,55,0.05), transparent 60%),
+      #fdf8ee;
+    background-image:
+      repeating-radial-gradient(circle at 20% 30%, rgba(139,90,60,0.025) 0, rgba(139,90,60,0.025) 1px, transparent 1px, transparent 4px),
+      linear-gradient(#fdf8ee, #fbf3e2);
+    box-shadow:
+      0 18px 45px rgba(44,26,29,0.18),
+      0 4px 10px rgba(44,26,29,0.12);
+    border-radius: 3px;
+    animation: parchment-rise 1s cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  @keyframes parchment-rise{
+    from{ transform: translateY(60px); opacity:0; }
+    to{ transform: translateY(0); opacity:1; }
+  }
+
+  /* deckled edge effect using clip-path-like mask via box-shadow rough border */
+  .parchment::before{
+    content:"";
+    position:absolute;
+    inset: -6px;
+    background: inherit;
+    z-index:-1;
+    border-radius: 3px;
+    mask-image: none;
+  }
+  .parchment::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; top:-6px; height:12px;
+    background:
+      radial-gradient(circle, #fdf8ee 60%, transparent 62%) 0 0/16px 16px repeat-x;
+    filter: drop-shadow(0 -1px 1px rgba(44,26,29,0.06));
+  }
+
+  .deckle-bottom{
+    position:absolute;
+    left:0; right:0; bottom:-6px; height:12px;
+    background:
+      radial-gradient(circle, #fdf8ee 60%, transparent 62%) 0 0/16px 16px repeat-x;
+    filter: drop-shadow(0 1px 1px rgba(44,26,29,0.06));
+  }
+
+  .letter-gold-rule{
+    height:2px;
+    width: 70px;
+    margin: 0 auto 26px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .letter-body{
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(1.15rem, 2.4vw, 1.42rem);
+    line-height: 1.85;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .letter-body .line{
+    opacity:0;
+    display:block;
+    margin-bottom: 0.6em;
+    animation: line-fade 0.9s ease forwards;
+  }
+  @keyframes line-fade{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .signature-line{
+    font-family:'Great Vibes', cursive;
+    font-size: clamp(2rem, 6vw, 2.9rem);
+    color: var(--rose-deep);
+    margin-top: 10px;
+    display:inline-block;
+  }
+
+  /* bouquet */
+  .bouquet-wrap{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-top: 18px;
+    opacity:0;
+    transform: translateY(14px) scale(0.97);
+    transition: opacity 2s ease, transform 2s ease;
+    pointer-events:none;
+  }
+  .bouquet-wrap.show{
+    opacity:1;
+    transform: translateY(0) scale(1);
+  }
+  .bouquet-wrap svg{
+    width: min(78%, 300px);
+    height:auto;
+    filter: drop-shadow(0 8px 16px rgba(44,26,29,0.15));
+  }
+
+  /* controls */
+  .controls{
+    position:fixed;
+    left:50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    display:flex;
+    gap:14px;
+    z-index:20;
+  }
+
+  .ctrl-btn{
+    font-family:'Cormorant Garamond', serif;
+    font-size:0.95rem;
+    letter-spacing: 0.8px;
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: 1px solid var(--gold);
+    background: rgba(253,251,247,0.9);
+    color: var(--rose-deep);
+    cursor:pointer;
+    backdrop-filter: blur(4px);
+    transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+    box-shadow: 0 3px 10px rgba(44,26,29,0.1);
+  }
+  .ctrl-btn:hover{
+    background: var(--rose-deep);
+    color:#fff;
+    transform: translateY(-2px);
+  }
+  .ctrl-btn:focus-visible{
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  @media (max-width: 480px){
+    .parchment{ padding: 30px 20px 34px; }
+    .controls{ gap:10px; }
+    .ctrl-btn{ padding: 9px 16px; font-size:0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     CONFIGURATION VARIABLES (edit as needed)
+     ============================================================ -->
+<script id="config-data" type="application/json">
+{
+  "SENDER_NAME": "Kurt",
+  "RECIPIENT_NAME": "My Dearest",
+  "LETTER_TITLE": "A Letter for You",
+  "MUSIC_URL": "bg-music.mp3",
+  "LETTER_CONTENT": "Dearest Cutieepieee,\n\nI've been thinking about us a lot lately, and I wanted to put into words what you mean to me. Even though we've only known each other for a short time, it already feels like you've become someone incredibly special to me. Sometimes the rush of everyday life makes it hard to say everything I feel, so I wanted to write this letter to remind you just how much you mean to me.\n\nEvery time I think about our nights playing Valorant together, I can't help but smile. Those moments might seem simple to everyone else, but to me they're memories I'll always treasure. I love hearing your voice, especially when you're full of energy or randomly start singing. You probably don't even realize how much those little moments brighten my day. They make me laugh, make me forget about everything else, and remind me how lucky I am that we met.\n\nYou have this incredible way of making everything feel lighter. Whether we're gaming, talking, laughing, or just enjoying each other's company, you make me feel at peace. You're funny, unbelievably beautiful, and so captivating that I find myself thinking about you even when we're apart.\n\nBefore you came into my life, I was still carrying the pain from my past relationship. I didn't know if I'd ever fully let go of it. But somehow, without even trying, you helped me heal. You reminded me that my heart could feel excitement, comfort, and happiness again. For that, I'll always be grateful.\n\nOne memory I'll never forget is the first time you told me, \"Mahal Kita.\" I know it's not even your native language since you're Chinese and living in Malaysia, which somehow made it even more meaningful to me. Knowing you learned those words and chose to say them to me made my heart melt in a way I can't describe.\n\nWhen I'm with you, I feel genuinely happy. It's like you've added color to a world that used to feel monochrome. You make ordinary days feel special just by being part of them.\n\nI dream about the day I'll finally get to visit you in your country, hold your hand for the first time, and create memories that aren't limited to a screen. And if life is kind enough to us, I hope one day I'll get to call you my wife. That's a future I'd choose every single time.\n\nThere's something I've always wanted to tell you:\n\nIf I were to kiss you and then go to hell, so be it. I'd brag to the demons that I felt heaven without ever entering it.\n\nMaybe it's dramatic, but it's the closest I can come to explaining how deeply you make me feel.\n\nThank you for being exactly who you are. Thank you for your laughter, your energy, your kindness, and for unknowingly helping me heal. I don't know what tomorrow will bring, but I do know that meeting you through a Valorant game is one of the happiest accidents that's ever happened to me.\n\nNo matter where life takes us, I hope we keep making memories together—one game, one laugh, one conversation at a time.\n\nWith all my love,\n\nKurt"
+}
+</script>
+
+<div id="petal-layer"></div>
+
+<!-- ============ STAGE 1 : ENVELOPE ============ -->
+<section id="stage-envelope">
+  <h1 class="letter-title" id="letter-title"></h1>
+
+  <div class="envelope-wrap">
+    <div class="envelope-body">
+      <div class="envelope-side-left"></div>
+      <div class="envelope-side-right"></div>
+      <div class="envelope-pocket"></div>
+      <div class="letter-peek"></div>
+      <div class="envelope-flap"></div>
+    </div>
+    <div class="wax-seal" id="wax-seal" role="button" tabindex="0" aria-label="Click the seal to open the letter">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <text x="50" y="62" font-size="46" text-anchor="middle" font-family="'Great Vibes', cursive" fill="#e9c25f">L</text>
+      </svg>
+    </div>
+  </div>
+
+  <p class="seal-prompt">Click the seal to open&hellip;</p>
+</section>
+
+<!-- ============ STAGE 2 : LETTER ============ -->
+<section id="stage-letter" aria-live="polite">
+  <div class="parchment" id="parchment">
+    <div class="letter-gold-rule"></div>
+    <div class="letter-body" id="letter-body"></div>
+    <div class="deckle-bottom"></div>
+  </div>
+
+  <div class="bouquet-wrap" id="bouquet-wrap">
+    <svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- eucalyptus stems -->
+      <g stroke="#6f8f74" stroke-width="3" fill="none" opacity="0.9">
+        <path d="M160 250 C 120 190 90 150 60 110"/>
+        <path d="M160 250 C 200 190 235 150 268 108"/>
+        <path d="M160 250 C 140 180 120 130 100 90"/>
+        <path d="M160 250 C 182 180 205 130 226 92"/>
+      </g>
+      <g fill="#8da38f" opacity="0.95">
+        <ellipse cx="62" cy="108" rx="10" ry="15" transform="rotate(-30 62 108)"/>
+        <ellipse cx="80" cy="128" rx="9" ry="13" transform="rotate(-25 80 128)"/>
+        <ellipse cx="98" cy="88" rx="9" ry="13" transform="rotate(20 98 88)"/>
+        <ellipse cx="118" cy="112" rx="9" ry="13" transform="rotate(15 118 112)"/>
+        <ellipse cx="270" cy="106" rx="10" ry="15" transform="rotate(30 270 106)"/>
+        <ellipse cx="250" cy="126" rx="9" ry="13" transform="rotate(25 250 126)"/>
+        <ellipse cx="228" cy="90" rx="9" ry="13" transform="rotate(-20 228 90)"/>
+        <ellipse cx="204" cy="114" rx="9" ry="13" transform="rotate(-15 204 114)"/>
+      </g>
+
+      <!-- baby's breath -->
+      <g fill="#fdfbf7" stroke="#e7ded0" stroke-width="1">
+        <circle cx="130" cy="70" r="4"/>
+        <circle cx="145" cy="55" r="4"/>
+        <circle cx="160" cy="65" r="4"/>
+        <circle cx="175" cy="50" r="4"/>
+        <circle cx="190" cy="68" r="4"/>
+        <circle cx="150" cy="80" r="3.5"/>
+        <circle cx="170" cy="78" r="3.5"/>
+        <circle cx="115" cy="82" r="3.5"/>
+        <circle cx="205" cy="80" r="3.5"/>
+      </g>
+
+      <!-- roses -->
+      <g>
+        <g transform="translate(120,120)">
+          <circle r="20" fill="#c9727e"/>
+          <circle r="15" fill="#b56a75"/>
+          <circle r="9" fill="#8a4a55"/>
+        </g>
+        <g transform="translate(160,100)">
+          <circle r="24" fill="#d0808b"/>
+          <circle r="18" fill="#b56a75"/>
+          <circle r="10" fill="#7c3f49"/>
+        </g>
+        <g transform="translate(200,124)">
+          <circle r="19" fill="#c9727e"/>
+          <circle r="14" fill="#a85862"/>
+          <circle r="8" fill="#7c3f49"/>
+        </g>
+        <g transform="translate(140,150)">
+          <circle r="15" fill="#d99aa3"/>
+          <circle r="11" fill="#b56a75"/>
+          <circle r="6" fill="#8a4a55"/>
+        </g>
+        <g transform="translate(182,150)">
+          <circle r="15" fill="#d99aa3"/>
+          <circle r="11" fill="#b56a75"/>
+          <circle r="6" fill="#8a4a55"/>
+        </g>
+      </g>
+
+      <!-- ribbon -->
+      <path d="M140 230 Q160 210 180 230 L188 250 Q160 262 132 250 Z" fill="#d4af37" opacity="0.85"/>
+      <path d="M160 230 L160 250" stroke="#a98826" stroke-width="2" opacity="0.6"/>
+    </svg>
+  </div>
+</section>
+
+<div class="controls" id="controls" style="display:none;">
+  <button class="ctrl-btn" id="mute-btn" type="button">Mute Music</button>
+  <button class="ctrl-btn" id="close-btn" type="button">Close Letter</button>
+</div>
+
+<audio id="bg-audio" loop preload="none"></audio>
+
+<script>
+(function(){
+  const cfg = JSON.parse(document.getElementById('config-data').textContent);
+
+  const titleEl = document.getElementById('letter-title');
+  const bodyEl = document.getElementById('letter-body');
+  const audio = document.getElementById('bg-audio');
+  const sealBtn = document.getElementById('wax-seal');
+  const stageEnvelope = document.getElementById('stage-envelope');
+  const stageLetter = document.getElementById('stage-letter');
+  const bouquet = document.getElementById('bouquet-wrap');
+  const controls = document.getElementById('controls');
+  const muteBtn = document.getElementById('mute-btn');
+  const closeBtn = document.getElementById('close-btn');
+  const petalLayer = document.getElementById('petal-layer');
+
+  // ---- fill dynamic content ----
+  titleEl.textContent = cfg.LETTER_TITLE;
+  document.title = cfg.LETTER_TITLE;
+
+  let letterText = cfg.LETTER_CONTENT
+    .replace(/\[Recipient Name\]/g, cfg.RECIPIENT_NAME)
+    .replace(/\[Sender Name\]/g, cfg.SENDER_NAME);
+
+  const rawLines = letterText.split('\n').filter(l => l.trim().length > 0);
+
+  // detect the sign-off line (e.g. "With all my love,") and the sender name line to style as signature
+  rawLines.forEach((line, i) => {
+    const span = document.createElement('span');
+    span.className = 'line';
+    span.style.animationDelay = (i * 0.55) + 's';
+
+    const isSenderLine = (line.trim() === cfg.SENDER_NAME.trim());
+    if (isSenderLine){
+      const sig = document.createElement('span');
+      sig.className = 'signature-line';
+      sig.textContent = line;
+      span.appendChild(sig);
+    } else {
+      span.textContent = line;
+    }
+    bodyEl.appendChild(span);
+  });
+
+  const totalRevealTime = (rawLines.length * 0.55) + 0.9; // seconds, matches animation timing
+
+  audio.src = cfg.MUSIC_URL;
+
+  function spawnPetals(count){
+    for (let i=0;i<count;i++){
+      const p = document.createElement('div');
+      p.className = 'petal';
+      const startX = Math.random()*100;
+      const dur = 4 + Math.random()*3.5;
+      const delay = Math.random()*1.4;
+      const drift = (Math.random()*160 - 80) + 'px';
+      const size = 8 + Math.random()*10;
+      p.style.left = startX + 'vw';
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.setProperty('--drift', drift);
+      p.style.animationDuration = dur + 's';
+      p.style.animationDelay = delay + 's';
+      petalLayer.appendChild(p);
+      setTimeout(() => p.remove(), (dur+delay)*1000 + 500);
+    }
+  }
+
+  function openLetter(){
+    // play music
+    audio.play().catch(()=>{ /* autoplay may be blocked until gesture; this IS a gesture so should work */ });
+
+    stageEnvelope.classList.add('opening');
+    spawnPetals(22);
+
+    setTimeout(() => {
+      stageEnvelope.classList.add('hidden');
+      stageLetter.classList.add('visible');
+      controls.style.display = 'flex';
+
+      // reveal bouquet once text finishes revealing
+      setTimeout(() => {
+        bouquet.classList.add('show');
+      }, totalRevealTime * 1000);
+
+    }, 950);
+  }
+
+  sealBtn.addEventListener('click', openLetter);
+  sealBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      openLetter();
+    }
+  });
+
+  // also reveal bouquet early if user scrolls to bottom of letter
+  stageLetter.addEventListener('scroll', () => {
+    const scrolledToBottom = stageLetter.scrollTop + stageLetter.clientHeight >= stageLetter.scrollHeight - 40;
+    if (scrolledToBottom){
+      bouquet.classList.add('show');
+    }
+  });
+
+  muteBtn.addEventListener('click', () => {
+    audio.muted = !audio.muted;
+    muteBtn.textContent = audio.muted ? 'Unmute Music' : 'Mute Music';
+  });
+
+  closeBtn.addEventListener('click', () => {
+    stageLetter.classList.remove('visible');
+    bouquet.classList.remove('show');
+    audio.pause();
+    audio.currentTime = 0;
+    controls.style.display = 'none';
+
+    stageEnvelope.classList.remove('hidden');
+    stageEnvelope.classList.remove('opening');
+
+    // reset letter body animation delays so it replays next time
+    bodyEl.querySelectorAll('.line').forEach((el, i) => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+      el.style.animationDelay = (i * 0.55) + 's';
+    });
+  });
+})();
+</script>
+</body>
+</html>
